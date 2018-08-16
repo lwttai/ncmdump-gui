@@ -218,7 +218,15 @@ namespace DesktopTool
             double totalLen = _file.Length - _file.Position;
             double alreadyProcess = 0;
 
-            using (FileStream stream = new FileStream(string.Format("{0}.{1}", Name, Format), FileMode.OpenOrCreate, FileAccess.Write))
+            char[] ignore = Path.GetInvalidFileNameChars();
+            var convertName = Name;
+
+            foreach (var i in ignore)
+            {
+                convertName = convertName.Replace(i.ToString(), "");
+            }
+
+            using (FileStream stream = new FileStream(string.Format("{0}.{1}", convertName, Format), FileMode.OpenOrCreate, FileAccess.Write))
             {
                 while (n > 1)
                 {
