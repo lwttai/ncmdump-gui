@@ -165,7 +165,14 @@ namespace DesktopTool
                 uiTimer.Start();
                 _parallelResult = Parallel.ForEach(_files, (e) =>
                 {
-                    e.Dump();
+                    try
+                    {
+                        e.Dump();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw;
+                    }
                 });
             }
         }

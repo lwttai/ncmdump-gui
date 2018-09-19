@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using TagLib.Id3v2;
 
 namespace DesktopTool
 {
@@ -30,6 +31,7 @@ namespace DesktopTool
 
         private NeteaseCopyrightData _cdata = null;
 
+        private byte[] _imageCover;
         private Bitmap _cover = null;
         public Bitmap Cover { get => _cover; }
 
@@ -178,8 +180,8 @@ namespace DesktopTool
             // skip crc & some use less chunk
             file.Seek(9, SeekOrigin.Current);
 
-            byte[] imageChunk = ReadChunk(file);
-            using (MemoryStream imageStream = new MemoryStream(imageChunk))
+            _imageCover = ReadChunk(file);
+            using (MemoryStream imageStream = new MemoryStream(_imageCover))
             {
                 _cover = Image.FromStream(imageStream) as Bitmap;
             }
@@ -226,7 +228,9 @@ namespace DesktopTool
                 convertName = convertName.Replace(i.ToString(), "");
             }
 
-            using (FileStream stream = new FileStream(string.Format("{0}.{1}", convertName, Format), FileMode.OpenOrCreate, FileAccess.Write))
+            string filePath = string.Format("{0}.{1}", convertName, Format);
+
+            using (FileStream stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
             {
                 while (n > 1)
                 {
@@ -246,6 +250,54 @@ namespace DesktopTool
                     _progress = (alreadyProcess / totalLen) * 100d;
                 }
             }
+
+
+            TagLib.File f = null;
+            TagLib.Tag tag = null;
+            TagLib.ByteVector imgCoverData = null;
+            if (_imageCover != null)
+            {
+                imgCoverData = new TagLib.ByteVector(_imageCover, _imageCover.Length);
+            }
+            if (Format.ToLower() == "mp3")
+            {
+                f = TagLib.Mpeg.File.Create(filePath);
+                tag = f.GetTag(TagLib.TagTypes.Id3v2);
+                if (imgCoverData != null)
+                {
+                    AttachedPictureFrame frame = new AttachedPictureFrame();
+                    frame.MimeType = "image/jpeg";
+                    frame.Data = imgCoverData;
+                    ((TagLib.Id3v2.Tag)tag).AddFrame(frame);
+                }
+            }
+            else if (Format.ToLower() == "flac")
+            {
+                f = TagLib.Flac.File.Create(filePath);
+                tag = f.Tag;
+
+                if (imgCoverData != null)
+                {
+                    TagLib.Picture picture = new TagLib.Picture(imgCoverData);
+                    picture.MimeType = "image/jpeg";
+                    picture.Type = TagLib.PictureType.FrontCover;
+
+                    TagLib.IPicture[] pics = new TagLib.IPicture[tag.Pictures.Length + 1];
+                    for (int i = 0; i < tag.Pictures.Length; i++)
+                    {
+                        pics[i] = tag.Pictures[i];
+                    }
+                    pics[pics.Length - 1] = picture;
+
+                    tag.Pictures = pics;
+                }
+            }
+            tag.Title = Name;
+            tag.Performers = Artist;
+            tag.Album = _cdata.Album;
+            tag.Comment = "Create by netease copyright protected dump tool gui. author 5L";
+
+            f.Save();
         }
 
         public int CompareTo(NeteaseCrypto other)
