@@ -45,10 +45,13 @@ namespace DesktopTool
             {
                 if (_cdata != null && artist == null)
                 {
-                    artist = new List<string>();
-                    foreach (var item in _cdata.Artist)
+                    if (_cdata.Artist != null)
                     {
-                        artist.Add(item[0].ToString());
+                        artist = new List<string>();
+                        foreach (var item in _cdata.Artist)
+                        {
+                            artist.Add(item[0].ToString());
+                        }
                     }
                 }
 

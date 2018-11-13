@@ -100,7 +100,8 @@ namespace DesktopTool
                         sf.Trimming = StringTrimming.EllipsisCharacter;
                         e.Graphics.DrawString(f.Name, Font, brush, nameRect, sf);
 
-                        e.Graphics.DrawString(String.Join("/", f.Artist), Font, brush, artistRect, sf);
+                        if (f.Artist != null)
+                            e.Graphics.DrawString(String.Join("/", f.Artist), Font, brush, artistRect, sf);
 
                         e.Graphics.DrawString(string.Format("{0:F}%", f.Progress), Font, brush, progressRect, sf);
                     }
