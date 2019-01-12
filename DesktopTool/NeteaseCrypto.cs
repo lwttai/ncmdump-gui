@@ -111,7 +111,7 @@ namespace DesktopTool
 
         private byte[] _keyBox;
 
-        private FileStream _file;
+        private readonly FileStream _file;
 
         public NeteaseCrypto(FileStream file)
         {
@@ -308,6 +308,12 @@ namespace DesktopTool
             if (Progress == 100) return -1;
             if (Progress > other.Progress) return 0;
             return 1;
+        }
+
+        public void CloseFile()
+        {
+            if (_file != null)
+                _file.Dispose();
         }
     }
 }
