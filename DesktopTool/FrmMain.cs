@@ -130,10 +130,8 @@ namespace DesktopTool
 
             var obj = drgevent.Data.GetData(DataFormats.FileDrop);
 
-            if (obj is string[])
+            if (obj is string[] files)
             {
-                string[] files = (string[])obj;
-
                 foreach (string file in files)
                 {
                     var _processing = new FileInfo(file);
@@ -143,11 +141,11 @@ namespace DesktopTool
                     {
                         if (_processing.Extension.ToLower() == NCM_FILE_EXTENSION)
                         {
-                            var fs = _processing.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
                             await fileProcessFactory.StartNew(new Action(() =>
                             {
                                 try
                                 {
+                                    var fs = _processing.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
                                     NeteaseCrypto neteaseFile = new NeteaseCrypto(fs);
                                     _files.Add(neteaseFile);
                                 }
@@ -170,9 +168,13 @@ namespace DesktopTool
                     {
                         e.Dump();
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         throw;
+                    }
+                    finally
+                    {
+                        e.CloseFile();
                     }
                 });
             }
