@@ -30,6 +30,7 @@ namespace DesktopTool
         {
             InitializeComponent();
             AllowDrop = true;
+            TopMost = true;
             BackColor = Color.Transparent;
         }
 
@@ -81,9 +82,13 @@ namespace DesktopTool
                 RectangleF nameRect = new RectangleF(imgRect.Right + 5, ClientArea.Y + _offsetY, ClientArea.Width / 2.8f, ITEM_HEIGHT);
                 RectangleF artistRect = new RectangleF(nameRect.Right, ClientArea.Y + _offsetY, nameRect.Width, ITEM_HEIGHT);
                 RectangleF progressRect = new RectangleF(artistRect.Right, ClientArea.Y + _offsetY, ClientArea.Width - artistRect.Right, ITEM_HEIGHT);
-                using (HightQualityGraphics _ = new HightQualityGraphics(e.Graphics))
+
+                if (f.Cover != null)
                 {
-                    e.Graphics.DrawImage(f.Cover, imgRect);
+                    using (HightQualityGraphics _ = new HightQualityGraphics(e.Graphics))
+                    {
+                        e.Graphics.DrawImage(f.Cover, imgRect);
+                    }
                 }
 
                 using (SolidBrush brush = new SolidBrush(Color.FromArgb(120, 0, 0, 0)))
@@ -98,10 +103,24 @@ namespace DesktopTool
                         sf.LineAlignment = StringAlignment.Center;
                         sf.FormatFlags = StringFormatFlags.NoWrap;
                         sf.Trimming = StringTrimming.EllipsisCharacter;
-                        e.Graphics.DrawString(f.Name, Font, brush, nameRect, sf);
+
+                        if (f.Name != null)
+                        {
+                            e.Graphics.DrawString(f.Name, Font, brush, nameRect, sf);
+                        }
+                        else
+                        {
+                            e.Graphics.DrawString("未知", Font, brush, nameRect, sf);
+                        }
 
                         if (f.Artist != null)
+                        {
                             e.Graphics.DrawString(String.Join("/", f.Artist), Font, brush, artistRect, sf);
+                        }
+                        else
+                        {
+                            e.Graphics.DrawString("未知", Font, brush, artistRect, sf);
+                        }
 
                         e.Graphics.DrawString(string.Format("{0:F}%", f.Progress), Font, brush, progressRect, sf);
                     }
@@ -147,6 +166,7 @@ namespace DesktopTool
                                 {
                                     var fs = _processing.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
                                     NeteaseCrypto neteaseFile = new NeteaseCrypto(fs);
+                                    neteaseFile.FileName = Path.GetFileNameWithoutExtension(file);
                                     _files.Add(neteaseFile);
                                 }
                                 catch (Exception ex)
