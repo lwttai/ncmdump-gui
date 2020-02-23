@@ -24,6 +24,7 @@ namespace DesktopTool
         private List<NeteaseCrypto> _files = new List<NeteaseCrypto>();
         private bool _draging = false;
         private ParallelLoopResult _parallelResult;
+        private ParallelOptions _parallelOptions = new ParallelOptions();
 
 
         public FrmMain()
@@ -166,7 +167,7 @@ namespace DesktopTool
                                 {
                                     var fs = _processing.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
                                     NeteaseCrypto neteaseFile = new NeteaseCrypto(fs);
-                                    neteaseFile.FileName = Path.GetFileNameWithoutExtension(file);
+                                    neteaseFile.FileName = Path.GetFullPath(file);
                                     _files.Add(neteaseFile);
                                 }
                                 catch (Exception ex)
@@ -182,6 +183,7 @@ namespace DesktopTool
                 Invalidate();
 
                 uiTimer.Start();
+                _parallelOptions.MaxDegreeOfParallelism = Environment.ProcessorCount;
                 _parallelResult = Parallel.ForEach(_files, (e) =>
                 {
                     try
@@ -220,7 +222,7 @@ namespace DesktopTool
             {
                 uiTimer.Stop();
                 Invalidate();
-                MessageBox.Show("All done!");
+                MessageBox.Show(this, "All done!");
                 _files.Clear();
                 Invalidate();
             }

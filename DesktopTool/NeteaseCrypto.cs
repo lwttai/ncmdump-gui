@@ -302,9 +302,10 @@ namespace DesktopTool
                         _cdata.Format = "flac";
                     }
 
-                    filePath = string.Format("{0}.{1}", FileName, Format);
+                    string FilePathWithoutExtension = FileName.Remove(FileName.LastIndexOf("."));
+                    filePath = string.Format("{0}.{1}", FilePathWithoutExtension, Format);
 
-                    stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write);
+                    stream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
                 }
 
                 if (stream != null)
